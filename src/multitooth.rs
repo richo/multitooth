@@ -3,6 +3,7 @@
 
 use std::os;
 use std::io::stdio;
+use std::io::IoErrorKind;
 use std::io::process::Command;
 
 fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: uint) {
@@ -20,7 +21,12 @@ fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: uint) {
 
             loop {
                 match output.read(buf.as_mut_slice()) {
-                    Err(e) => { println!("{}", e); return },
+                    Err(e) => {
+                        if e.kind != IoErrorKind::EndOfFile {
+                            panic!(e);
+                        }
+                        return
+                    },
                     Ok(s) => {
                         // Theoretically, stdout being a LineBufferedWriter *should* mean the right
                         // thing happens here and we can be delightfully naive
