@@ -3,11 +3,11 @@
 
 use std::os;
 use std::io::stdio;
-use std::io::IoErrorKind;
+use std::io::{IoErrorKind,LineBufferedWriter};
 use std::io::process::Command;
 
 fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: uint) {
-    let mut stdout = stdio::stdout();
+    let mut stdout: LineBufferedWriter<_> = stdio::stdout();
 
     args.push("-U".to_string());
     args.push(ubertooth.to_string());
