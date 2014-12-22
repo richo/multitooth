@@ -17,7 +17,7 @@ fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: uint) {
             let mut buf = &mut [0u8, ..2048];
             let mut output = p.stdout.as_mut().expect("Couldn't open output stream");
 
-            stdout.write(format!("[{}] ", ubertooth).as_bytes());
+            let _ = stdout.write(format!("[{}] ", ubertooth).as_bytes());
 
             loop {
                 match output.read(buf.as_mut_slice()) {
@@ -31,9 +31,9 @@ fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: uint) {
                         // Theoretically, stdout being a LineBufferedWriter *should* mean the right
                         // thing happens here and we can be delightfully naive
                         for i in range(0, s) {
-                            stdout.write_u8(buf[i]);
+                            let _ = stdout.write_u8(buf[i]);
                             if buf[i] == 0xa {
-                                stdout.write(format!("[{}] ", ubertooth).as_bytes());
+                                let _ = stdout.write(format!("[{}] ", ubertooth).as_bytes());
                             }
                         }
                     }
