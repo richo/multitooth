@@ -5,6 +5,7 @@ use std::os;
 use std::io::stdio;
 use std::io::{IoErrorKind,LineBufferedWriter};
 use std::io::process::Command;
+use std::thread::{Thread,JoinGuard};
 
 fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: uint) {
     let mut stdout: LineBufferedWriter<_> = stdio::stdout();
@@ -50,7 +51,7 @@ fn main() {
     // Jank, fix this later
     let ubertooths: uint = match os::getenv("UBERTOOTHS") {
         Some(s) => {
-            match from_str(s.as_slice()) {
+            match s.parse() {
                 Some (i) => i,
                 None => panic!("Must supply UBERTOOTHS"),
             }
@@ -59,15 +60,20 @@ fn main() {
     };
 
     let args = os::args();
+
+    if args.len() == 1 {
+        panic!("TODO usage()");
+    }
+
     let ref cmd = args[1];
     let ref args = args[2..];
 
-    for i in range(0, ubertooths) {
+    range(0, ubertooths).map(|i| -> JoinGuard<_> {
         let args = args.to_vec();
         let cmd = cmd.to_string();
 
-        spawn(move || {
+        Thread::spawn(move || {
             watch_ubertooth(cmd, args, i);
-        });
-    }
+        })
+    }).collect::<Vec<_>>();
 }
