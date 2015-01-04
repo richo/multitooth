@@ -15,7 +15,7 @@ fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: uint) {
 
     match Command::new(cmd).args(args.as_slice()).spawn() {
         Ok(mut p) => {
-            let mut buf = &mut [0u8, ..2048];
+            let mut buf = &mut [0u8; 2048];
             let mut output = p.stdout.as_mut().expect("Couldn't open output stream");
 
             let _ = stdout.write(format!("[{}] ", ubertooth).as_bytes());
