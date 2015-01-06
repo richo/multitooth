@@ -40,6 +40,8 @@ fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: uint, opts: Op
                         if e.kind != IoErrorKind::EndOfFile {
                             panic!(e);
                         }
+                        // Jank, need to test if there's only a header, but w/e
+                        unsafe { ::std::mem::forget(stdout) };
                         return
                     },
                     Ok(s) => {
