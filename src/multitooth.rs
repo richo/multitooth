@@ -11,11 +11,16 @@ use std::thread::{Thread,JoinGuard};
 
 use getopts::{optopt,optflag,getopts,OptGroup,usage};
 
-fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: uint) {
+fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: uint, opts: Opts) {
     let mut stdout: LineBufferedWriter<_> = stdio::stdout();
 
     args.push("-U".to_string());
     args.push(ubertooth.to_string());
+
+    if opts.advertising {
+        args.push("-A".to_string());
+        args.push((ubertooth % 3 + 37).to_string());
+    }
 
     match Command::new(cmd).args(args.as_slice()).spawn() {
         Ok(mut p) => {
@@ -72,8 +77,10 @@ fn get_args() -> (Vec<String>, Vec<String>) {
     return (parseargs, thruargs);
 }
 
+#[derive(Clone)]
 struct Opts {
     ubertooths: uint,
+    advertising: bool,
 }
 
 fn parse_opts(args: Vec<String>, opts: &[OptGroup]) -> Option<Opts> {
@@ -86,6 +93,8 @@ fn parse_opts(args: Vec<String>, opts: &[OptGroup]) -> Option<Opts> {
         return None;
     }
 
+    let advertising = matches.opt_present("A");
+
     let ubertooths: uint = match matches.opt_str("n") {
         Some(n) => match n.parse() {
             Some (i) => i,
@@ -96,6 +105,7 @@ fn parse_opts(args: Vec<String>, opts: &[OptGroup]) -> Option<Opts> {
 
     return Some(Opts {
         ubertooths: ubertooths,
+        advertising: advertising,
     })
 }
 
@@ -113,6 +123,7 @@ fn main() {
     let opts = &[
         optopt("n", "", "number of ubertooths", "UBERTOOTHS"),
         optflag("h", "help", "print this help menu"),
+        optflag("A", "advertising", "add the advertising address flag"),
     ];
 
     let (parseargs, thruargs) = get_args();
@@ -136,9 +147,10 @@ fn main() {
     range(0, options.ubertooths).map(|i| -> JoinGuard<_> {
         let args = args.to_vec();
         let cmd = cmd.to_string();
+        let options = options.clone();
 
         Thread::spawn(move || {
-            watch_ubertooth(cmd, args, i);
+            watch_ubertooth(cmd, args, i, options);
         })
     }).collect::<Vec<_>>();
 }
