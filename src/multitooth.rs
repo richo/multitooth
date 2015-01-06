@@ -22,6 +22,11 @@ fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: uint, opts: Op
         args.push((ubertooth % 3 + 37).to_string());
     }
 
+    if opts.debug {
+        println!("[{}] {} -- {}", ubertooth, cmd, args);
+        return;
+    }
+
     match Command::new(cmd).args(args.as_slice()).spawn() {
         Ok(mut p) => {
             let mut buf = &mut [0u8; 2048];
@@ -81,6 +86,7 @@ fn get_args() -> (Vec<String>, Vec<String>) {
 struct Opts {
     ubertooths: uint,
     advertising: bool,
+    debug: bool,
 }
 
 fn parse_opts(args: Vec<String>, opts: &[OptGroup]) -> Option<Opts> {
@@ -94,6 +100,7 @@ fn parse_opts(args: Vec<String>, opts: &[OptGroup]) -> Option<Opts> {
     }
 
     let advertising = matches.opt_present("A");
+    let debug = matches.opt_present("d");
 
     let ubertooths: uint = match matches.opt_str("n") {
         Some(n) => match n.parse() {
@@ -106,6 +113,7 @@ fn parse_opts(args: Vec<String>, opts: &[OptGroup]) -> Option<Opts> {
     return Some(Opts {
         ubertooths: ubertooths,
         advertising: advertising,
+        debug: debug,
     })
 }
 
@@ -124,6 +132,7 @@ fn main() {
         optopt("n", "", "number of ubertooths", "UBERTOOTHS"),
         optflag("h", "help", "print this help menu"),
         optflag("A", "advertising", "add the advertising address flag"),
+        optflag("d", "debug", "print invocations instead of running children"),
     ];
 
     let (parseargs, thruargs) = get_args();
