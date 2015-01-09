@@ -11,7 +11,7 @@ use std::thread::{Thread,JoinGuard};
 
 use getopts::{optopt,optflag,getopts,OptGroup,usage};
 
-fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: uint, opts: Opts) {
+fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: u8, opts: Opts) {
     let mut stdout: LineBufferedWriter<_> = stdio::stdout();
 
     args.push("-U".to_string());
@@ -23,7 +23,7 @@ fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: uint, opts: Op
     }
 
     if opts.debug {
-        println!("[{}] {} -- {}", ubertooth, cmd, args);
+        println!("[{}] {} -- {:?}", ubertooth, cmd, args);
         return;
     }
 
@@ -86,7 +86,7 @@ fn get_args() -> (Vec<String>, Vec<String>) {
 
 #[derive(Clone)]
 struct Opts {
-    ubertooths: uint,
+    ubertooths: u8,
     advertising: bool,
     debug: bool,
 }
@@ -104,7 +104,7 @@ fn parse_opts(args: Vec<String>, opts: &[OptGroup]) -> Option<Opts> {
     let advertising = matches.opt_present("A");
     let debug = matches.opt_present("d");
 
-    let ubertooths: uint = match matches.opt_str("n") {
+    let ubertooths: u8 = match matches.opt_str("n") {
         Some(n) => match n.parse() {
             Some (i) => i,
             None => return None,
@@ -155,7 +155,7 @@ fn main() {
     let ref cmd = thruargs[0];
     let ref args = thruargs[1..];
 
-    range(0, options.ubertooths).map(|i| -> JoinGuard<_> {
+    range(0, options.ubertooths).map(|i| -> Thread {
         let args = args.to_vec();
         let cmd = cmd.to_string();
         let options = options.clone();
