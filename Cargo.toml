@@ -6,3 +6,7 @@ authors = ["Richo Healey <richo@psych0tik.net>"]
 repository = "https://github.com/richo/multitooth"
 license = "MIT"
 description = "A cli tool for poking multiple uberteeth"
+
+[dependencies]
+
+getopts = "*"

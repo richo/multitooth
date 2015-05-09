@@ -1,18 +1,19 @@
-#![crate_name = "multitooth"]
 #![feature(slicing_syntax)]
 
 extern crate getopts;
 
 use std::os;
-use std::io::stdio;
-use std::io::{IoErrorKind,LineBufferedWriter};
-use std::io::process::Command;
-use std::thread::{Thread,JoinGuard};
+use std::env;
+use std::process;
+use std::io;
+use std::io::{Error,ErrorKind};
+use std::io::{Write,Read};
+use std::thread;
 
 use getopts::{optopt,optflag,getopts,OptGroup,usage};
 
 fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: u8, opts: Opts) {
-    let mut stdout: LineBufferedWriter<_> = stdio::stdout();
+    let mut stdout = io::stdout();
 
     args.push("-U".to_string());
     args.push(ubertooth.to_string());
@@ -27,7 +28,7 @@ fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: u8, opts: Opts
         return;
     }
 
-    match Command::new(cmd).args(args.as_slice()).spawn() {
+    match process::Command::new(cmd).args(args.as_slice()).spawn() {
         Ok(mut p) => {
             let mut buf = &mut [0u8; 2048];
             let mut output = p.stdout.as_mut().expect("Couldn't open output stream");
@@ -35,11 +36,12 @@ fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: u8, opts: Opts
             let _ = stdout.write(format!("[{}] ", ubertooth).as_bytes());
 
             loop {
-                match output.read(buf.as_mut_slice()) {
+                match output.read(buf) {
                     Err(e) => {
-                        if e.kind != IoErrorKind::EndOfFile {
+                        // TODO: I'm not really sure where EOF ended up in the stdlib
+                        // if e.kind() != ErrorKind::EndOfFile {
                             panic!(e);
-                        }
+                        // }
                         // Jank, need to test if there's only a header, but w/e
                         unsafe { ::std::mem::forget(stdout) };
                         return
@@ -47,8 +49,8 @@ fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: u8, opts: Opts
                     Ok(s) => {
                         // Theoretically, stdout being a LineBufferedWriter *should* mean the right
                         // thing happens here and we can be delightfully naive
-                        for i in range(0, s) {
-                            let _ = stdout.write_u8(buf[i]);
+                        for i in 0..s {
+                            let _ = stdout.write(&[buf[i]]);
                             if buf[i] == 0xa {
                                 let _ = stdout.write(format!("[{}] ", ubertooth).as_bytes());
                             }
@@ -64,14 +66,14 @@ fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: u8, opts: Opts
 }
 
 fn get_args() -> (Vec<String>, Vec<String>) {
-    let args = os::args();
+    let args: Vec<_> = env::args().collect();
 
     let mut thru = false;
     let mut parseargs: Vec<String> = vec![];
     let mut thruargs: Vec<String> = vec![];
 
     for a in args.iter() {
-        if a.as_slice() == "--" {
+        if a == "--" {
             thru = true;
         } else {
             if thru {
@@ -106,8 +108,8 @@ fn parse_opts(args: Vec<String>, opts: &[OptGroup]) -> Option<Opts> {
 
     let ubertooths: u8 = match matches.opt_str("n") {
         Some(n) => match n.parse() {
-            Some (i) => i,
-            None => return None,
+            Ok(i) => i,
+            Err(_) => return None,
         },
         None => return None,
     };
@@ -120,9 +122,9 @@ fn parse_opts(args: Vec<String>, opts: &[OptGroup]) -> Option<Opts> {
 }
 
 fn print_usage(opts: &[OptGroup], msg: Option<&str>) {
-    let ref program = os::args()[0];
+    let ref program = env::args().next().unwrap();
     let brief = format!("Usage: {} [options] -- ubertooth-<tool> [uberooth options]", program);
-    print!("{}", usage(brief.as_slice(), opts));
+    print!("{}", usage(&brief, opts));
 
     if let Some(s) = msg {
         println!("{}", s);
@@ -155,12 +157,12 @@ fn main() {
     let ref cmd = thruargs[0];
     let ref args = thruargs[1..];
 
-    range(0, options.ubertooths).map(|i| -> Thread {
+    (0..options.ubertooths).map(|i| -> thread::JoinHandle<_> {
         let args = args.to_vec();
         let cmd = cmd.to_string();
         let options = options.clone();
 
-        Thread::spawn(move || {
+        thread::spawn(move || {
             watch_ubertooth(cmd, args, i, options);
         })
     }).collect::<Vec<_>>();
