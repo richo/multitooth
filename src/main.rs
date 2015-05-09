@@ -1,4 +1,6 @@
 #![feature(slicing_syntax)]
+#![feature(convert)]
+#![feature(collections)]
 
 extern crate getopts;
 
