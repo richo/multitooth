@@ -1,0 +1,8 @@
+[package]
+name = "multitooth"
+version = "0.0.1"
+authors = ["Richo Healey <richo@psych0tik.net>"]
+
+repository = "https://github.com/richo/multitooth"
+license = "MIT"
+description = "A cli tool for poking multiple uberteeth"

@@ -1,2 +1,7 @@
-multitooth: $(wildcard src/*)
-	rustc -o $@ src/multitooth.rs
+multitooth: build
+	cp target/debug/multitooth $@
+
+build:
+	cargo build
+
+.PHONY: build
