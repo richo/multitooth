@@ -10,7 +10,7 @@ use std::io::{Error,ErrorKind};
 use std::io::{Write,Read};
 use std::thread;
 
-use getopts::{optopt,optflag,getopts,OptGroup,usage};
+use getopts::Options;
 
 fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: u8, opts: Opts) {
     let mut stdout = io::stdout();
@@ -93,8 +93,8 @@ struct Opts {
     debug: bool,
 }
 
-fn parse_opts(args: Vec<String>, opts: &[OptGroup]) -> Option<Opts> {
-    let matches = match getopts(args.tail(), opts) {
+fn parse_opts(args: Vec<String>, opts: &Options) -> Option<Opts> {
+    let matches = match opts.parse(args.tail()) {
         Ok(m) => m,
         Err(f) => panic!(f),
     };
@@ -121,10 +121,10 @@ fn parse_opts(args: Vec<String>, opts: &[OptGroup]) -> Option<Opts> {
     })
 }
 
-fn print_usage(opts: &[OptGroup], msg: Option<&str>) {
+fn print_usage(opts: &Options, msg: Option<&str>) {
     let ref program = env::args().next().unwrap();
     let brief = format!("Usage: {} [options] -- ubertooth-<tool> [uberooth options]", program);
-    print!("{}", usage(&brief, opts));
+    print!("{}", opts.usage(&brief));
 
     if let Some(s) = msg {
         println!("{}", s);
@@ -132,25 +132,24 @@ fn print_usage(opts: &[OptGroup], msg: Option<&str>) {
 }
 
 fn main() {
-    let opts = &[
-        optopt("n", "", "number of ubertooths", "UBERTOOTHS"),
-        optflag("h", "help", "print this help menu"),
-        optflag("A", "advertising", "add the advertising address flag"),
-        optflag("d", "debug", "print invocations instead of running children"),
-    ];
+    let mut opts = Options::new();
+    opts.optopt("n", "", "number of ubertooths", "UBERTOOTHS");
+    opts.optflag("h", "help", "print this help menu");
+    opts.optflag("A", "advertising", "add the advertising address flag");
+    opts.optflag("d", "debug", "print invocations instead of running children");
 
     let (parseargs, thruargs) = get_args();
 
-    let options = match parse_opts(parseargs, opts) {
+    let options = match parse_opts(parseargs, &opts) {
         Some(o) => o,
         None => {
-            print_usage(opts, Some("-n is required"));
+            print_usage(&opts, Some("-n is required"));
             return;
         }
     };
 
     if thruargs.len() == 0 {
-        print_usage(opts, Some("Must supply an ubertooth cmd"));
+        print_usage(&opts, Some("Must supply an ubertooth cmd"));
         return;
     }
 
