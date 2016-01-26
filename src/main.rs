@@ -1,7 +1,3 @@
-#![feature(slicing_syntax)]
-#![feature(convert)]
-#![feature(collections)]
-
 extern crate getopts;
 
 use std::os;
@@ -30,7 +26,7 @@ fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: u8, opts: Opts
         return;
     }
 
-    match process::Command::new(cmd).args(args.as_slice()).spawn() {
+    match process::Command::new(cmd).args(&args[..]).spawn() {
         Ok(mut p) => {
             let mut buf = &mut [0u8; 2048];
             let mut output = p.stdout.as_mut().expect("Couldn't open output stream");
@@ -96,7 +92,7 @@ struct Opts {
 }
 
 fn parse_opts(args: Vec<String>, opts: &Options) -> Option<Opts> {
-    let matches = match opts.parse(args.tail()) {
+    let matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
         Err(f) => panic!(f),
     };
