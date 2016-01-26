@@ -3,7 +3,7 @@ extern crate getopts;
 use std::env;
 use std::process;
 use std::io;
-use std::io::{Write,Read};
+use std::io::{Write, Read};
 use std::thread;
 
 use getopts::Options;
@@ -36,9 +36,9 @@ fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: u8, opts: Opts
                     Err(e) => {
                         // TODO: I'm not really sure where EOF ended up in the stdlib
                         // if e.kind() != ErrorKind::EndOfFile {
-                            panic!(e);
+                        panic!(e);
                         // }
-                    },
+                    }
                     Ok(s) => {
                         // Theoretically, stdout being a LineBufferedWriter *should* mean the right
                         // thing happens here and we can be delightfully naive
@@ -51,7 +51,7 @@ fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: u8, opts: Opts
                     }
                 }
             }
-        },
+        }
         Err(e) => {
             panic!(e);
         }
@@ -100,10 +100,12 @@ fn parse_opts(args: Vec<String>, opts: &Options) -> Option<Opts> {
     let debug = matches.opt_present("d");
 
     let ubertooths: u8 = match matches.opt_str("n") {
-        Some(n) => match n.parse() {
-            Ok(i) => i,
-            Err(_) => return None,
-        },
+        Some(n) => {
+            match n.parse() {
+                Ok(i) => i,
+                Err(_) => return None,
+            }
+        }
         None => return None,
     };
 
@@ -111,12 +113,13 @@ fn parse_opts(args: Vec<String>, opts: &Options) -> Option<Opts> {
         ubertooths: ubertooths,
         advertising: advertising,
         debug: debug,
-    })
+    });
 }
 
 fn print_usage(opts: &Options, msg: Option<&str>) {
     let ref program = env::args().next().unwrap();
-    let brief = format!("Usage: {} [options] -- ubertooth-<tool> [uberooth options]", program);
+    let brief = format!("Usage: {} [options] -- ubertooth-<tool> [uberooth options]",
+                        program);
     print!("{}", opts.usage(&brief));
 
     if let Some(s) = msg {
@@ -129,7 +132,9 @@ fn main() {
     opts.optopt("n", "", "number of ubertooths", "UBERTOOTHS");
     opts.optflag("h", "help", "print this help menu");
     opts.optflag("A", "advertising", "add the advertising address flag");
-    opts.optflag("d", "debug", "print invocations instead of running children");
+    opts.optflag("d",
+                 "debug",
+                 "print invocations instead of running children");
 
     let (parseargs, thruargs) = get_args();
 
@@ -149,13 +154,15 @@ fn main() {
     let ref cmd = thruargs[0];
     let ref args = thruargs[1..];
 
-    (0..options.ubertooths).map(|i| -> thread::JoinHandle<_> {
-        let args = args.to_vec();
-        let cmd = cmd.to_string();
-        let options = options.clone();
+    (0..options.ubertooths)
+        .map(|i| -> thread::JoinHandle<_> {
+            let args = args.to_vec();
+            let cmd = cmd.to_string();
+            let options = options.clone();
 
-        thread::spawn(move || {
-            watch_ubertooth(cmd, args, i, options);
+            thread::spawn(move || {
+                watch_ubertooth(cmd, args, i, options);
+            })
         })
-    }).collect::<Vec<_>>();
+        .collect::<Vec<_>>();
 }
