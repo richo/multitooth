@@ -1,10 +1,8 @@
 extern crate getopts;
 
-use std::os;
 use std::env;
 use std::process;
 use std::io;
-use std::io::{Error,ErrorKind};
 use std::io::{Write,Read};
 use std::thread;
 
@@ -40,9 +38,6 @@ fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: u8, opts: Opts
                         // if e.kind() != ErrorKind::EndOfFile {
                             panic!(e);
                         // }
-                        // Jank, need to test if there's only a header, but w/e
-                        unsafe { ::std::mem::forget(stdout) };
-                        return
                     },
                     Ok(s) => {
                         // Theoretically, stdout being a LineBufferedWriter *should* mean the right
