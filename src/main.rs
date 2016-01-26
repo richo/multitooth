@@ -4,6 +4,7 @@ use std::env;
 use std::process;
 use std::io;
 use std::io::{Write, Read};
+use std::io::ErrorKind;
 use std::thread;
 
 use getopts::Options;
@@ -34,10 +35,9 @@ fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: u8, opts: Opts
             loop {
                 match output.read(buf) {
                     Err(e) => {
-                        // TODO: I'm not really sure where EOF ended up in the stdlib
-                        // if e.kind() != ErrorKind::EndOfFile {
-                        panic!(e);
-                        // }
+                        if e.kind() != ErrorKind::UnexpectedEof {
+                            panic!(e);
+                        }
                     }
                     Ok(s) => {
                         // Theoretically, stdout being a LineBufferedWriter *should* mean the right
