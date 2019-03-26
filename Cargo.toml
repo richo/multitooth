@@ -9,4 +9,4 @@ description = "A cli tool for poking multiple uberteeth"
 
 [dependencies]
 
-getopts = "*"
+getopts = "0.2.18"
