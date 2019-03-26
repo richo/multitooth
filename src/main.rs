@@ -154,7 +154,7 @@ fn main() {
     let ref cmd = thruargs[0];
     let ref args = thruargs[1..];
 
-    (0..options.ubertooths)
+    let handles = (0..options.ubertooths)
         .map(|i| -> thread::JoinHandle<_> {
             let args = args.to_vec();
             let cmd = cmd.to_string();
@@ -165,4 +165,9 @@ fn main() {
             })
         })
         .collect::<Vec<_>>();
+    for i in handles {
+        i.join().expect("Child failed");
+    }
+
+    println!("Done!");
 }

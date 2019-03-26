@@ -1,32 +1,23 @@
 [[package]]
 name = "getopts"
-version = "0.2.10"
+version = "0.2.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "libc"
-version = "0.1.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "log"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "libc 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "unicode-width 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "multitooth"
 version = "0.0.1"
 dependencies = [
- "getopts 0.2.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "getopts 0.2.18 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
+[[package]]
+name = "unicode-width"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
 [metadata]
-"checksum getopts 0.2.10 (registry+https://github.com/rust-lang/crates.io-index)" = "8cbea4ddb745c0178904bc12d149c75fb413bfd3c5313f2b4ab8f2c3a5daf1c6"
-"checksum libc 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)" = "3ba807e82d5a0728b7ffa848a2707eebaa5234331d4f84abda8117aae39af10b"
-"checksum log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "d2ee3324e161fe61168b08bcd096f1e023d14f0777a076ba14d1825ea3b99d40"
+"checksum getopts 0.2.18 (registry+https://github.com/rust-lang/crates.io-index)" = "0a7292d30132fb5424b354f5dc02512a86e4c516fe544bb7a25e7f266951b797"
+"checksum unicode-width 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "882386231c45df4700b275c7ff55b6f3698780a650026380e72dabe76fa46526"
