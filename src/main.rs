@@ -42,9 +42,9 @@ fn watch_ubertooth(cmd: String, mut args: Vec<String>, ubertooth: u8, opts: Opts
                     Ok(s) => {
                         // Theoretically, stdout being a LineBufferedWriter *should* mean the right
                         // thing happens here and we can be delightfully naive
-                        for i in 0..s {
-                            let _ = stdout.write(&[buf[i]]);
-                            if buf[i] == 0xa {
+                        for byte in buf.iter().take(s) {
+                            let _ = stdout.write(&[*byte]);
+                            if *byte == 0xa {
                                 let _ = stdout.write(format!("[{}] ", ubertooth).as_bytes());
                             }
                         }
@@ -68,15 +68,14 @@ fn get_args() -> (Vec<String>, Vec<String>) {
     for a in args.iter() {
         if a == "--" {
             thru = true;
+        } else if thru {
+            thruargs.push(a.clone());
         } else {
-            if thru {
-                thruargs.push(a.clone());
-            } else {
-                parseargs.push(a.clone());
-            }
+            parseargs.push(a.clone());
         }
     }
-    return (parseargs, thruargs);
+
+    (parseargs, thruargs)
 }
 
 #[derive(Clone)]
@@ -99,27 +98,20 @@ fn parse_opts(args: Vec<String>, opts: &Options) -> Option<Opts> {
     let advertising = matches.opt_present("A");
     let debug = matches.opt_present("d");
 
-    let ubertooths: u8 = match matches.opt_str("n") {
-        Some(n) => {
-            match n.parse() {
-                Ok(i) => i,
-                Err(_) => return None,
-            }
-        }
-        None => return None,
-    };
+    let ubertooths: u8 = matches.opt_str("n")?.parse().ok()?;
 
-    return Some(Opts {
-        ubertooths: ubertooths,
-        advertising: advertising,
-        debug: debug,
-    });
+    Some(Opts {
+        ubertooths,
+        advertising,
+        debug,
+    })
 }
 
+// TODO(richo) Just convert this to clap and be done with it
 fn print_usage(opts: &Options, msg: Option<&str>) {
-    let ref program = env::args().next().unwrap();
+    let program = env::args().next().unwrap();
     let brief = format!("Usage: {} [options] -- ubertooth-<tool> [uberooth options]",
-                        program);
+                        &program);
     print!("{}", opts.usage(&brief));
 
     if let Some(s) = msg {
@@ -146,13 +138,13 @@ fn main() {
         }
     };
 
-    if thruargs.len() == 0 {
+    if thruargs.is_empty() {
         print_usage(&opts, Some("Must supply an ubertooth cmd"));
         return;
     }
 
-    let ref cmd = thruargs[0];
-    let ref args = thruargs[1..];
+    let cmd = &thruargs[0];
+    let args = &thruargs[1..];
 
     let handles = (0..options.ubertooths)
         .map(|i| -> thread::JoinHandle<_> {
